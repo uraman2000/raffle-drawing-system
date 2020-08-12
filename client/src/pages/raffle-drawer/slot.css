@@ -1,0 +1,8 @@
+.raffleDrawer {
+  height: 100%;
+  overflow: hidden;
+}
+
+.raffleDrawer div {
+  width: 100%;
+}
