@@ -11,7 +11,7 @@ import { validationMetadatasToSchemas } from "class-validator-jsonschema";
 const routingControllersOptions = {
   cors: true,
   routePrefix: "/api",
-  controllers: [__dirname + "/controller/*.ts"],
+  controllers: [__dirname + "/controller/*.{js,ts}"],
 };
 const app = createExpressServer(routingControllersOptions);
 createConnection()

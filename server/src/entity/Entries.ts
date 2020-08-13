@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeor
 import { IsNotEmpty, IsString, IsInt, Min, IsNotIn, IsBoolean } from "class-validator";
 import { JSONSchema } from "class-validator-jsonschema";
 
-@Entity()
+@Entity("entries")
 export class Entries {
   @PrimaryGeneratedColumn()
   id: number;

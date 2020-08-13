@@ -14,7 +14,7 @@ export class EntriesController {
     const d = new Date();
     const yyyy = d.getFullYear();
     return await this.repository.find({
-      entryDate: Between(`${yyyy}-${MM}-01`, `${yyyy}-${Mmplus1}-01`),
+      createdAt: Between(`${yyyy}-${MM}-01`, `${yyyy}-${Mmplus1}-01`),
       isValid: true,
       region: region,
     });
