@@ -193,7 +193,7 @@ export default function Entries() {
         columns={state}
         icons={{
           Add: forwardRef((props, ref) => <AddBoxIcon onClick={(e) => handleAddButton()} />),
-          Check: forwardRef((props, ref) => <CheckIcon onClick={(e) => handleAddButton()} />),
+          // Check: forwardRef((props, ref) => <CheckIcon onClick={(e) => handleAddButton()} />),
           Clear: forwardRef((props, ref) => <CloseIcon onClick={(e) => handleAddButton()} />),
           Edit: forwardRef((props, ref) => <EditIcon onClick={(e) => handleAddButton()} />),
         }}
@@ -216,6 +216,7 @@ export default function Entries() {
             url += "&limit=" + query.pageSize;
             url += "&search=" + query.search;
             const result: any = await api.get(url);
+            console.log(result);
             resolve({
               data: result.data,
               page: result.page - 1,
@@ -249,6 +250,7 @@ export default function Entries() {
                 newData.ammountPaid = Number(newData.ammountPaid);
                 await api.put(`entry/${newData.id}`, newData);
                 tableRef.current.onQueryChange();
+                handleAddButton();
                 resolve();
               } catch (error) {
                 console.log(error);

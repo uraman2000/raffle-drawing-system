@@ -3,7 +3,7 @@ import TextLoop from "react-text-loop";
 import { useWindowSize } from "@react-hook/window-size";
 import Confetti from "react-confetti";
 import { Grid, Box, Typography, Button, FormControl, InputLabel, Select, FormHelperText } from "@material-ui/core";
-import { UseDelete } from "../../utils/UseDelete";
+import { UseDelete, UseDeleteBulk } from "../../utils/UseDelete";
 import { ShuffleArray } from "../../utils/ShuffleArray";
 import api from "../../utils/api";
 import "./slot.css";
@@ -32,7 +32,7 @@ export default function RaffleDrawer() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const wordlist: any = await api.get(`entries/8/${state.regionSelected}`);
+      const wordlist: any = await api.get(`entries/region/${state.regionSelected}`);
 
       if (wordlist.length === 0) {
         setstate({ ...state, wordList: [{ name: "empty" }] });
@@ -59,6 +59,7 @@ export default function RaffleDrawer() {
         prizeID: 0,
         prizeName: "",
       };
+
       state.prizes.forEach((element: any) => {
         if (element.name === state.prizeSelected) {
           winner.prizeID = element.id;
@@ -66,8 +67,15 @@ export default function RaffleDrawer() {
         }
       });
       winningEntry.numberOfEntries = 0;
-      await api.put(`entry/${winningEntry.id}`, winningEntry);
       await api.post(`winners`, winner);
+      const getwinners = UseDeleteBulk(state.wordList, "accountNumber", winningEntry.accountNumber, true);
+
+      getwinners.forEach(async (element: any) => {
+        element.isValid = false;
+      });
+      console.log(getwinners);
+
+      await api.post(`entries/bulk`, getwinners);
     };
 
     if (state.interval >= 100) {
@@ -77,9 +85,11 @@ export default function RaffleDrawer() {
 
       editEntryAndAddToWinners(winner);
 
+      const getLossers = UseDeleteBulk(state.wordList, "name", winner.name, false);
+
       setstate({
         ...state,
-        wordList: UseDelete(state.wordList, key),
+        wordList: getLossers,
         isStop: false,
         interval: 0,
         winner: winner,

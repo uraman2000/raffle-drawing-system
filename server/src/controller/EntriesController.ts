@@ -3,19 +3,15 @@ import { Entries } from "../entity/Entries";
 import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
 import { validate } from "class-validator";
 import { RandomWordGenerator } from "../util/RandomWordGenerator";
+import { Utils } from "../util/Utils";
 
 @JsonController()
 export class EntriesController {
   private repository = getRepository(Entries);
 
-  @Get("/entries/:month/:region")
-  async getAllThisMonth(@Param("month") month: number, @Param("region") region: string, @Res() res: any) {
-    const MM = month.toString().padStart(2, "0");
-    const Mmplus1 = (month + 1).toString().padStart(2, "0");
-    const d = new Date();
-    const yyyy = d.getFullYear();
+  @Get("/entries/region/:region")
+  async getAllViaRegion(@Param("region") region: string, @Res() res: any) {
     return await this.repository.find({
-      createdAt: Between(`${yyyy}-${MM}-01`, `${yyyy}-${Mmplus1}-01`),
       isValid: true,
       region: region,
     });
@@ -39,6 +35,11 @@ export class EntriesController {
       take: limit,
       skip: startIndex,
       where: [{ name: Like(`%${search}%`) }, { id: Like(`%${search}%`) }, { entryCode: Like(`%${search}%`) }],
+    });
+
+    data.map((item) => {
+      item.createdAt = Utils.formatDate(item.createdAt);
+      item.dateOfPayment = Utils.formatDate(item.dateOfPayment);
     });
 
     const count = await this.repository.count({
@@ -65,18 +66,26 @@ export class EntriesController {
 
   @Post("/entries")
   async save(@Body() body: Entries, @Res() res: any) {
+    const oldEntries = await this.repository.find({ select: ["accountNumber", "name", "isValid"] });
     try {
       validate(body).then((errors: any) => {
         if (errors.length > 0) {
           res.send(errors);
         }
       });
-      const temp = [];
+
+      oldEntries.forEach((oldItem) => {
+        if (oldItem.name === body.name || oldItem.accountNumber === body.accountNumber) {
+          body.isValid = oldItem.isValid;
+        }
+      });
+
+      const newEntries = [];
 
       for (let i = 0; i < body.numberOfEntries; i++) {
         const entry: Entries = new Entries();
         entry.accountNumber = body.accountNumber;
-        entry.ammountPaid = body.ammountPaid;
+        entry.ammountPaid = body.ammountPaid || 0;
         entry.paymentFacility = body.paymentFacility;
         entry.dateOfPayment = body.dateOfPayment;
         entry.region = body.region;
@@ -85,14 +94,27 @@ export class EntriesController {
         entry.mobileNumber = body.mobileNumber;
         entry.isValid = body.isValid;
         entry.entryCode = RandomWordGenerator();
-        console.log(RandomWordGenerator());
-        temp.push(entry);
+
+        newEntries.push(entry);
       }
-      await this.repository.save(temp);
+
+      await this.repository.save(newEntries);
       res.send(`${body.name} has been successfully Added.`);
     } catch (error) {
       res.status(409).send(error);
     }
+  }
+
+  @Post("/entries/bulk")
+  async putBulk(@Body() body: Entries, @Res() res: any) {
+    validate(body).then((errors: any) => {
+      if (errors.length > 0) {
+        res.send(errors);
+      }
+    });
+    delete body.numberOfEntries;
+    await this.repository.save(body);
+    res.send(`id: ${body.name} has been successfully Updated.`);
   }
 
   @Put("/entry/:id")

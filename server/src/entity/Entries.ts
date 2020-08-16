@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 import { IsNotEmpty, IsString, IsInt, Min, IsNotIn, IsBoolean, IsNumber } from "class-validator";
 import { JSONSchema } from "class-validator-jsonschema";
-import { isString } from "util";
 
 @Entity()
 export class Entries {
@@ -45,19 +44,15 @@ export class Entries {
   mobileNumber: number;
 
   @Column()
-  @IsNotEmpty()
-  @IsNumber()
   @JSONSchema({
     example: 9123456789,
   })
   ammountPaid: number;
 
   @Column()
-  @IsString()
   paymentFacility: String;
 
   @Column()
-  @IsString()
   @JSONSchema({
     example: "08-15-2020",
   })
