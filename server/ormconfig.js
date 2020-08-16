@@ -1,5 +1,5 @@
 const env =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "development" || process.env.NODE_ENV === undefined
     ? { dir: "src", host: "localhost", password: "" }
     : { dir: "build", host: "127.0.0.1", password: "RFC2019@db" };
 

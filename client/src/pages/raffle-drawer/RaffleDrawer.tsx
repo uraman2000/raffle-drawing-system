@@ -65,6 +65,7 @@ export default function RaffleDrawer() {
           winner.prizeName = element.name;
         }
       });
+      winningEntry.numberOfEntries = 0;
       await api.put(`entry/${winningEntry.id}`, winningEntry);
       await api.post(`winners`, winner);
     };

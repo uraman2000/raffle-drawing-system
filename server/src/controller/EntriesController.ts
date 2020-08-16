@@ -2,6 +2,7 @@ import { getRepository, LessThan, Raw, Between, Like } from "typeorm";
 import { Entries } from "../entity/Entries";
 import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
 import { validate } from "class-validator";
+import { RandomWordGenerator } from "../util/RandomWordGenerator";
 
 @JsonController()
 export class EntriesController {
@@ -37,7 +38,7 @@ export class EntriesController {
       },
       take: limit,
       skip: startIndex,
-      where: [{ name: Like(`%${search}%`) }, { id: Like(`%${search}%`) }],
+      where: [{ name: Like(`%${search}%`) }, { id: Like(`%${search}%`) }, { entryCode: Like(`%${search}%`) }],
     });
 
     const count = await this.repository.count({
@@ -70,7 +71,24 @@ export class EntriesController {
           res.send(errors);
         }
       });
-      await this.repository.save(body);
+      const temp = [];
+
+      for (let i = 0; i < body.numberOfEntries; i++) {
+        const entry: Entries = new Entries();
+        entry.accountNumber = body.accountNumber;
+        entry.ammountPaid = body.ammountPaid;
+        entry.paymentFacility = body.paymentFacility;
+        entry.dateOfPayment = body.dateOfPayment;
+        entry.region = body.region;
+        entry.branch = body.branch;
+        entry.name = body.name;
+        entry.mobileNumber = body.mobileNumber;
+        entry.isValid = body.isValid;
+        entry.entryCode = RandomWordGenerator();
+        console.log(RandomWordGenerator());
+        temp.push(entry);
+      }
+      await this.repository.save(temp);
       res.send(`${body.name} has been successfully Added.`);
     } catch (error) {
       res.status(409).send(error);
@@ -84,7 +102,7 @@ export class EntriesController {
         res.send(errors);
       }
     });
-
+    delete body.numberOfEntries;
     await this.repository.update({ id: id }, body);
     res.send(`id: ${id} has been successfully Updated.`);
   }

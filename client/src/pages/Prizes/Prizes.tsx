@@ -4,10 +4,9 @@ import api from "../../utils/api";
 
 interface Row {
   id: number;
-  region: string;
   name: string;
-  mobileNumber: number;
-  isValid: boolean;
+  frequency: string;
+  numOfWinnersPerDraw: number;
 }
 
 const column: Array<Column<Row>> = [
@@ -62,17 +61,18 @@ export default function Prizes() {
           onRowAdd: (newData: any) =>
             new Promise(async (resolve, reject) => {
               try {
-                await api.post("entries", newData);
+                await api.post("prizes", newData);
                 tableRef.current.onQueryChange();
                 resolve();
               } catch (error) {
+                console.log(error);
                 reject();
               }
             }),
           onRowUpdate: (newData: any, oldData: any) =>
             new Promise(async (resolve, reject) => {
               try {
-                await api.put(`entry/${newData.id}`, newData);
+                await api.put(`prize/${newData.id}`, newData);
                 tableRef.current.onQueryChange();
                 resolve();
               } catch (error) {
@@ -82,7 +82,7 @@ export default function Prizes() {
           onRowDelete: (oldData: any) =>
             new Promise(async (resolve, reject) => {
               try {
-                await api.delete(`entry/${oldData.id}`);
+                await api.delete(`prize/${oldData.id}`);
                 tableRef.current.onQueryChange();
                 resolve();
               } catch (error) {

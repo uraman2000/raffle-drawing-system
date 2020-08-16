@@ -1,11 +1,20 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
-import { IsNotEmpty, IsString, IsInt, Min, IsNotIn, IsBoolean } from "class-validator";
+import { IsNotEmpty, IsString, IsInt, Min, IsNotIn, IsBoolean, IsNumber } from "class-validator";
 import { JSONSchema } from "class-validator-jsonschema";
+import { isString } from "util";
 
-@Entity("entries")
+@Entity()
 export class Entries {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column()
+  @IsNotEmpty()
+  @IsNumber()
+  @JSONSchema({
+    example: 9123456789,
+  })
+  accountNumber: number;
 
   @Column()
   @IsNotEmpty()
@@ -15,6 +24,11 @@ export class Entries {
     example: "NLR",
   })
   region: string;
+
+  @Column()
+  @IsNotEmpty()
+  @IsString()
+  branch: string;
 
   @Column()
   @IsNotEmpty()
@@ -32,11 +46,39 @@ export class Entries {
 
   @Column()
   @IsNotEmpty()
+  @IsNumber()
+  @JSONSchema({
+    example: 9123456789,
+  })
+  ammountPaid: number;
+
+  @Column()
+  @IsString()
+  paymentFacility: String;
+
+  @Column()
+  @IsString()
+  @JSONSchema({
+    example: "08-15-2020",
+  })
+  dateOfPayment: Date;
+
+  @Column()
+  entryCode: string;
+
+  @Column()
+  @IsNotEmpty()
   @IsBoolean()
   @JSONSchema({
     example: true,
   })
   isValid: boolean;
+
+  @IsNumber()
+  @JSONSchema({
+    example: 5,
+  })
+  numberOfEntries: number;
 
   @Column()
   @CreateDateColumn()

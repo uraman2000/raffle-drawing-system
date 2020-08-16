@@ -62,7 +62,7 @@ export class WinnersController {
         }
       });
       await this.repository.save(body);
-      res.send(`Entry Number : ${body.id} has been successfully Added.`);
+      res.send(`ID: ${body.id} has been successfully Added.`);
     } catch (error) {
       res.status(409).send(error);
     }
