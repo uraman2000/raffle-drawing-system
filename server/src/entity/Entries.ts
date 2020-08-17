@@ -52,7 +52,7 @@ export class Entries {
   @Column()
   paymentFacility: String;
 
-  @Column()
+  @Column({ default: null, nullable: true })
   @JSONSchema({
     example: "08-15-2020",
   })

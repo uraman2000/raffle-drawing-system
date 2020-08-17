@@ -1,13 +1,16 @@
 import React, { useRef, useState, forwardRef, useEffect } from "react";
 import MaterialTable, { Column } from "material-table";
 import api from "../../utils/api";
-import { makeStyles, Select, TextField } from "@material-ui/core";
+import { makeStyles, Select, TextField, Button, Grid } from "@material-ui/core";
 import AddBoxIcon from "@material-ui/icons/AddBox";
 import CloseIcon from "@material-ui/icons/Close";
 import EditIcon from "@material-ui/icons/Edit";
 import CheckIcon from "@material-ui/icons/Check";
-
+import { DropzoneDialog } from "material-ui-dropzone";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import { csvJSON } from "../../utils/csvJson";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 
 interface Row {
   id: number;
@@ -30,6 +33,7 @@ interface branchType {
 }
 const useStyles = makeStyles({
   addButton: {
+    marginTop: "15px",
     //  add button on top
     "& div.MuiToolbar-root > div > div > div > span  ": {
       margin: 20,
@@ -185,90 +189,153 @@ export default function Entries() {
     });
     console.log(isEdit);
   };
+
+  const [dropZone, setdropZone] = useState({ isOpen: false });
+
+  const openDropZone = () => {
+    setdropZone({ isOpen: !dropZone.isOpen });
+  };
+  const onSaveDropZone = (files: any) => {
+    var fileReader = new FileReader();
+    fileReader.readAsText(files[0]);
+    fileReader.onloadend = async (e) => {
+      const content = csvJSON(fileReader.result);
+
+      try {
+        await api.post("entries/new/bulk", content);
+      } catch (error) {
+        console.log(error);
+      }
+      openDropZone();
+    };
+  };
+  const downloadCSV = () => {};
+
   return (
-    <div className={classes.addButton}>
-      <MaterialTable
-        title="Entry List"
-        tableRef={tableRef}
-        columns={state}
-        icons={{
-          Add: forwardRef((props, ref) => <AddBoxIcon onClick={(e) => handleAddButton()} />),
-          // Check: forwardRef((props, ref) => <CheckIcon onClick={(e) => handleAddButton()} />),
-          Clear: forwardRef((props, ref) => <CloseIcon onClick={(e) => handleAddButton()} />),
-          Edit: forwardRef((props, ref) => <EditIcon onClick={(e) => handleAddButton()} />),
-        }}
-        options={{
-          maxBodyHeight: "auto",
-          minBodyHeight: "auto",
-          addRowPosition: "first",
-          loadingType: "overlay",
-          pageSize: 5,
-          pageSizeOptions: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100],
-          sorting: false,
-          grouping: true,
-          exportAllData: true,
-          exportButton: true,
-        }}
-        data={(query: any) =>
-          new Promise(async (resolve, reject) => {
-            let url = `entries/paginate`;
-            url += "?page=" + (query.page + 1);
-            url += "&limit=" + query.pageSize;
-            url += "&search=" + query.search;
-            const result: any = await api.get(url);
-            console.log(result);
-            resolve({
-              data: result.data,
-              page: result.page - 1,
-              totalCount: result.total,
-            });
-          })
-        }
-        editable={{
-          onRowAdd: (newData: Row) =>
+    <>
+      <div>
+        <Grid container direction="row" justify="flex-end" alignItems="baseline" spacing={2}>
+          <Grid item>
+            <Button
+              variant="contained"
+              size="large"
+              color="secondary"
+              startIcon={<CloudDownloadIcon />}
+              download
+              href={"/sample.csv"}
+            >
+              Download Sample
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              startIcon={<CloudUploadIcon />}
+              onClick={openDropZone}
+            >
+              Upload CSV
+            </Button>
+          </Grid>
+        </Grid>
+
+        <DropzoneDialog
+          open={dropZone.isOpen}
+          onSave={(files) => onSaveDropZone(files)}
+          acceptedFiles={[
+            ".csv, text/csv, application/vnd.ms-excel, application/csv, text/x-csv, application/x-csv, text/comma-separated-values, text/x-comma-separated-values",
+          ]}
+          showPreviews={false}
+          filesLimit={1}
+          maxFileSize={5000000}
+          onClose={openDropZone}
+        />
+      </div>
+      <div className={classes.addButton}>
+        <MaterialTable
+          title="Entry List"
+          tableRef={tableRef}
+          columns={state}
+          icons={{
+            Add: forwardRef((props, ref) => <AddBoxIcon onClick={(e) => handleAddButton()} />),
+            // Check: forwardRef((props, ref) => <CheckIcon onClick={(e) => handleAddButton()} />),
+            Clear: forwardRef((props, ref) => <CloseIcon onClick={(e) => handleAddButton()} />),
+            Edit: forwardRef((props, ref) => <EditIcon onClick={(e) => handleAddButton()} />),
+          }}
+          options={{
+            maxBodyHeight: "auto",
+            minBodyHeight: "auto",
+            addRowPosition: "first",
+            loadingType: "overlay",
+            pageSize: 5,
+            pageSizeOptions: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100],
+            sorting: false,
+            grouping: true,
+            exportAllData: true,
+            exportButton: true,
+          }}
+          data={(query: any) =>
             new Promise(async (resolve, reject) => {
-              try {
-                const regionfinder: any = branches.find((item: branchType) => item.branch === newData.branch);
-                newData.region = regionfinder!.region;
-                newData.isValid = true;
-                newData.ammountPaid = Number(newData.ammountPaid);
-                await api.post("entries", newData);
-                tableRef.current.onQueryChange();
-                resolve();
-                handleAddButton();
-              } catch (error) {
-                console.log(error);
-                reject();
-              }
-            }),
-          onRowUpdate: (newData: any, oldData: any) =>
-            new Promise(async (resolve, reject) => {
-              try {
-                const regionfinder: any = branches.find((item: branchType) => item.branch === newData.branch);
-                newData.region = regionfinder!.region;
-                newData.numberOfEntries = 0;
-                newData.ammountPaid = Number(newData.ammountPaid);
-                await api.put(`entry/${newData.id}`, newData);
-                tableRef.current.onQueryChange();
-                handleAddButton();
-                resolve();
-              } catch (error) {
-                console.log(error);
-                reject();
-              }
-            }),
-          onRowDelete: (oldData: any) =>
-            new Promise(async (resolve, reject) => {
-              try {
-                await api.delete(`entry/${oldData.id}`);
-                tableRef.current.onQueryChange();
-                resolve();
-              } catch (error) {
-                reject();
-              }
-            }),
-        }}
-      />
-    </div>
+              let url = `entries/paginate`;
+              url += "?page=" + (query.page + 1);
+              url += "&limit=" + query.pageSize;
+              url += "&search=" + query.search;
+              const result: any = await api.get(url);
+              console.log(result);
+              resolve({
+                data: result.data,
+                page: result.page - 1,
+                totalCount: result.total,
+              });
+            })
+          }
+          editable={{
+            onRowAdd: (newData: Row) =>
+              new Promise(async (resolve, reject) => {
+                try {
+                  const regionfinder: any = branches.find((item: branchType) => item.branch === newData.branch);
+                  newData.region = regionfinder!.region;
+                  newData.isValid = true;
+                  newData.ammountPaid = Number(newData.ammountPaid);
+                  await api.post("entries", newData);
+                  tableRef.current.onQueryChange();
+                  resolve();
+                  handleAddButton();
+                } catch (error) {
+                  console.log(error);
+                  reject();
+                }
+              }),
+            onRowUpdate: (newData: any, oldData: any) =>
+              new Promise(async (resolve, reject) => {
+                try {
+                  const regionfinder: any = branches.find((item: branchType) => item.branch === newData.branch);
+                  newData.region = regionfinder!.region;
+                  newData.numberOfEntries = 0;
+                  newData.ammountPaid = Number(newData.ammountPaid);
+                  await api.put(`entry/${newData.id}`, newData);
+                  tableRef.current.onQueryChange();
+                  handleAddButton();
+                  resolve();
+                } catch (error) {
+                  console.log(error);
+                  reject();
+                }
+              }),
+            onRowDelete: (oldData: any) =>
+              new Promise(async (resolve, reject) => {
+                try {
+                  await api.delete(`entry/${oldData.id}`);
+                  tableRef.current.onQueryChange();
+                  resolve();
+                } catch (error) {
+                  reject();
+                }
+              }),
+          }}
+        />
+      </div>
+    </>
   );
 }

@@ -106,7 +106,7 @@ export class EntriesController {
   }
 
   @Post("/entries/bulk")
-  async putBulk(@Body() body: Entries, @Res() res: any) {
+  async postBulk(@Body() body: Entries, @Res() res: any) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -115,6 +115,31 @@ export class EntriesController {
     delete body.numberOfEntries;
     await this.repository.save(body);
     res.send(`id: ${body.name} has been successfully Updated.`);
+  }
+
+  @Post("/entries/new/bulk")
+  async postNewBulk(@Body() body: Entries[], @Res() res: any) {
+    const oldEntries = await this.repository.find({ select: ["accountNumber", "name", "isValid"] });
+    validate(body).then((errors: any) => {
+      if (errors.length > 0) {
+        res.send(errors);
+      }
+    });
+    body.forEach((element, key) => {
+      if (element.accountNumber === 0 || element.mobileNumber === null) {
+        body.splice(key, 1);
+      }
+    });
+
+    body.forEach((element) => {
+      oldEntries.forEach((oldItem) => {
+        if (oldItem.name === element.name || oldItem.accountNumber === element.accountNumber) {
+          element.isValid = oldItem.isValid;
+        }
+      });
+    });
+    await this.repository.save(body);
+    res.send(`data has been successfully Updated.`);
   }
 
   @Put("/entry/:id")
