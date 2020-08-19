@@ -1,5 +1,5 @@
 import axios, { Method } from "axios";
-const baseURL = process.env.NODE_ENV === "development" ? "localhost" : "localhost";
+const baseURL = process.env.NODE_ENV === "development" ? "localhost" : "18.140.209.86";
 const apiBase = `http://${baseURL}:3000/api/`;
 
 const instance = axios.create({
