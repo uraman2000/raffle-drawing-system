@@ -14,7 +14,7 @@ export class BranchController {
     let obj = {};
 
     branches.forEach((element: Branch) => {
-      obj[element.Branch] = element.Branch;
+      obj[element.branch] = element.branch;
     });
     console.log(obj);
     res.status(200).send(obj);

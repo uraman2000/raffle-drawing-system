@@ -1,7 +1,7 @@
 const env =
-  process.env.NODE_ENV === "development" || process.env.NODE_ENV === undefined
-    ? { dir: "src", host: "localhost", password: "" }
-    : { dir: "build", host: "127.0.0.1", password: "RFC2019@db" };
+  process.env.NODE_ENV === "development"
+    ? { dir: "src", host: "localhost", password: "", ext: ".ts" }
+    : { dir: "build", host: "127.0.0.1", password: "RFC2019@db", ext: ".js" };
 
 module.exports = {
   type: "mysql",
@@ -12,9 +12,9 @@ module.exports = {
   database: "raffle_drawing_system_db",
   synchronize: true,
   logging: false,
-  entities: [env.dir + "/entity/**/*.{js,ts}"],
-  migrations: [env.dir + "/migration/*.{js,ts}"],
-  subscribers: [env.dir + "/subscriber/**/*.{js,ts}"],
+  entities: [env.dir + `/entity/**/*${env.ext}`],
+  migrations: [env.dir + `/migration/*${env.ext}`],
+  subscribers: [env.dir + `/subscriber/**/*${env.ext}`],
   //   entities: ["build/entity/**/*.js"],
   //   migrations: ["build/migration/**/*.js"],
   //   subscribers: ["build/subscriber/**/*.js"],
