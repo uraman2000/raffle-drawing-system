@@ -1,7 +1,7 @@
 const env =
   process.env.NODE_ENV === "development"
     ? { dir: "src", host: "localhost", password: "", ext: ".ts" }
-    : { dir: "build", host: "18.140.209.86", password: "RFC2019@db", ext: ".js" };
+    : { dir: "build", host: "127.0.0.1", password: "RFC2019@db", ext: ".js" };
 
 module.exports = {
   type: "mysql",
