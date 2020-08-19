@@ -44,15 +44,21 @@ export class Entries {
   mobileNumber: number;
 
   @Column()
+  @IsNotEmpty()
+  @IsInt()
   @JSONSchema({
     example: 9123456789,
   })
   ammountPaid: number;
 
   @Column()
+  @IsNotEmpty()
+  @IsString()
   paymentFacility: String;
 
   @Column({ default: null, nullable: true })
+  @IsNotEmpty()
+  @IsString()
   @JSONSchema({
     example: "08-15-2020",
   })
