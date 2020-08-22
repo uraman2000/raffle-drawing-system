@@ -1,6 +1,6 @@
 import React, { useRef, useState, forwardRef, useEffect } from "react";
 import MaterialTable, { Column } from "material-table";
-import api from "../../utils/api";
+import { api } from "../../utils/api";
 import { makeStyles, Select, TextField, Button, Grid } from "@material-ui/core";
 import AddBoxIcon from "@material-ui/icons/AddBox";
 import CloseIcon from "@material-ui/icons/Close";
@@ -207,9 +207,9 @@ export default function Entries() {
         console.log(error);
       }
       openDropZone();
+      tableRef.current.onQueryChange();
     };
   };
-  const downloadCSV = () => {};
 
   return (
     <>

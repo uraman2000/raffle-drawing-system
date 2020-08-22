@@ -1,14 +1,28 @@
 import { getRepository, LessThan, Raw, Between, Like } from "typeorm";
-import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
+import {
+  Param,
+  Body,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Res,
+  Req,
+  JsonController,
+  UseBefore,
+  HeaderParam,
+} from "routing-controllers";
 import { validate } from "class-validator";
 import { Winners } from "../entity/Winners";
+import { checkJwt } from "../middlewares/checkJwt";
 
 @JsonController()
 export class WinnersController {
   private repository = getRepository(Winners);
 
   @Get("/winners")
-  getAll() {
+  @UseBefore(checkJwt)
+  getAll(@HeaderParam("access_token") token: string) {
     return this.repository.find();
   }
 
@@ -49,12 +63,14 @@ export class WinnersController {
   }
 
   @Get("/winner/:id")
-  one(@Param("id") id: number) {
+  @UseBefore(checkJwt)
+  one(@HeaderParam("access_token") token: string, @Param("id") id: number) {
     return this.repository.findOne(id);
   }
 
   @Post("/winners")
-  async save(@Body() body: Winners, @Res() res: any) {
+  @UseBefore(checkJwt)
+  async save(@HeaderParam("access_token") token: string, @Body() body: Winners, @Res() res: any) {
     try {
       validate(body).then((errors: any) => {
         if (errors.length > 0) {
@@ -69,7 +85,13 @@ export class WinnersController {
   }
 
   @Put("/winner/:id")
-  async put(@Param("id") id: number, @Body() body: Winners, @Res() res: any) {
+  @UseBefore(checkJwt)
+  async put(
+    @HeaderParam("access_token") token: string,
+    @Param("id") id: number,
+    @Body() body: Winners,
+    @Res() res: any
+  ) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -81,7 +103,8 @@ export class WinnersController {
   }
 
   @Delete("/winner/:id")
-  async remove(@Param("id") id: number, @Res() res: any) {
+  @UseBefore(checkJwt)
+  async remove(@HeaderParam("access_token") token: string, @Param("id") id: number, @Res() res: any) {
     let student = await this.repository.findOneOrFail(id);
     await this.repository.remove(student);
     return res.send(`id: ${id} has been removed.`);

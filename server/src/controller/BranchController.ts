@@ -1,15 +1,29 @@
 import { getRepository } from "typeorm";
-import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
+import {
+  Param,
+  Body,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Res,
+  Req,
+  JsonController,
+  UseBefore,
+  HeaderParam,
+} from "routing-controllers";
 import { validate } from "class-validator";
 import { Branch } from "../entity/Branch";
 import { debug } from "console";
+import { checkJwt } from "../middlewares/checkJwt";
 
 @JsonController()
+@UseBefore(checkJwt)
 export class BranchController {
   private repository = getRepository(Branch);
 
   @Get("/branches/lookup")
-  async lookUp(@Res() res: any) {
+  async lookUp(@HeaderParam("access_token") token: string, @Res() res: any) {
     let branches: Branch[] = await this.repository.find();
     let obj = {};
 
@@ -21,17 +35,17 @@ export class BranchController {
   }
 
   @Get("/branches")
-  getAll() {
+  getAll(@HeaderParam("access_token") token: string) {
     return this.repository.find();
   }
 
   @Get("/branch/:id")
-  one(@Param("id") id: number) {
+  one(@HeaderParam("access_token") token: string, @Param("id") id: number) {
     return this.repository.findOne(id);
   }
 
   @Post("/branches")
-  async save(@Body() body: Branch, @Res() res: any) {
+  async save(@HeaderParam("access_token") token: string, @Body() body: Branch, @Res() res: any) {
     try {
       validate(body).then((errors: any) => {
         if (errors.length > 0) {
@@ -46,7 +60,12 @@ export class BranchController {
   }
 
   @Put("/branch/:id")
-  async put(@Param("id") id: number, @Body() body: Branch, @Res() res: any) {
+  async put(
+    @HeaderParam("access_token") token: string,
+    @Param("id") id: number,
+    @Body() body: Branch,
+    @Res() res: any
+  ) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -58,7 +77,7 @@ export class BranchController {
   }
 
   @Delete("/branch/:id")
-  async remove(@Param("id") id: number, @Res() res: any) {
+  async remove(@HeaderParam("access_token") token: string, @Param("id") id: number, @Res() res: any) {
     let student = await this.repository.findOneOrFail(id);
     await this.repository.remove(student);
     return res.send(`id: ${id} has been removed.`);

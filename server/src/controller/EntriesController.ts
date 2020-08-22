@@ -1,16 +1,34 @@
 import { getRepository, LessThan, Raw, Between, Like } from "typeorm";
 import { Entries } from "../entity/Entries";
-import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
+import {
+  Param,
+  Body,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Res,
+  Req,
+  JsonController,
+  UseBefore,
+  HeaderParam,
+} from "routing-controllers";
 import { validate } from "class-validator";
 import { RandomWordGenerator } from "../util/RandomWordGenerator";
 import { Utils } from "../util/Utils";
+import { checkJwt } from "../middlewares/checkJwt";
 
 @JsonController()
+@UseBefore(checkJwt)
 export class EntriesController {
   private repository = getRepository(Entries);
 
   @Get("/entries/region/:region")
-  async getAllViaRegion(@Param("region") region: string, @Res() res: any) {
+  async getAllViaRegion(
+    @HeaderParam("access_token") token: string,
+    @Param("region") region: string,
+    @Res() res: any
+  ) {
     return await this.repository.find({
       isValid: true,
       region: region,
@@ -18,7 +36,7 @@ export class EntriesController {
   }
 
   @Get("/entries/paginate")
-  async paginate(@Res() res: any, @Req() req: any) {
+  async paginate(@HeaderParam("access_token") token: string, @Res() res: any, @Req() req: any) {
     const page = req.query.page * 1;
     const limit = req.query.limit * 1;
     const search = req.query.search || "";
@@ -55,17 +73,17 @@ export class EntriesController {
   }
 
   @Get("/entries")
-  getAll() {
+  getAll(@HeaderParam("access_token") token: string) {
     return this.repository.find();
   }
 
   @Get("/entry/:id")
-  one(@Param("id") id: number) {
+  one(@HeaderParam("access_token") token: string, @Param("id") id: number) {
     return this.repository.findOne(id);
   }
 
   @Post("/entries")
-  async save(@Body() body: Entries, @Res() res: any) {
+  async save(@HeaderParam("access_token") token: string, @Body() body: Entries, @Res() res: any) {
     const oldEntries = await this.repository.find({ select: ["accountNumber", "name", "isValid"] });
     try {
       validate(body).then((errors: any) => {
@@ -106,7 +124,7 @@ export class EntriesController {
   }
 
   @Post("/entries/bulk")
-  async postBulk(@Body() body: Entries, @Res() res: any) {
+  async postBulk(@HeaderParam("access_token") token: string, @Body() body: Entries, @Res() res: any) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -118,7 +136,7 @@ export class EntriesController {
   }
 
   @Post("/entries/new/bulk")
-  async postNewBulk(@Body() body: Entries[], @Res() res: any) {
+  async postNewBulk(@HeaderParam("access_token") token: string, @Body() body: Entries[], @Res() res: any) {
     const oldEntries = await this.repository.find({ select: ["accountNumber", "name", "isValid"] });
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
@@ -143,7 +161,12 @@ export class EntriesController {
   }
 
   @Put("/entry/:id")
-  async put(@Param("id") id: number, @Body() body: Entries, @Res() res: any) {
+  async put(
+    @HeaderParam("access_token") token: string,
+    @Param("id") id: number,
+    @Body() body: Entries,
+    @Res() res: any
+  ) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -155,7 +178,7 @@ export class EntriesController {
   }
 
   @Delete("/entry/:id")
-  async remove(@Param("id") id: number, @Res() res: any) {
+  async remove(@HeaderParam("access_token") token: string, @Param("id") id: number, @Res() res: any) {
     let student = await this.repository.findOneOrFail(id);
     await this.repository.remove(student);
     return res.send(`id: ${id} has been removed.`);

@@ -1,11 +1,23 @@
 import React from "react";
 import clsx from "clsx";
-import { AppBar, Toolbar, IconButton, Typography, Divider, CssBaseline, Drawer } from "@material-ui/core";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Divider,
+  CssBaseline,
+  Drawer,
+  Button,
+  Link,
+} from "@material-ui/core";
 import { createStyles, makeStyles, Theme, useTheme } from "@material-ui/core/styles";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MenuIcon from "@material-ui/icons/Menu";
 import DrawerItems from "./DrawerItems";
+import { deleteAccess, getAccess } from "../../utils/localStorage";
+import { useHistory } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -14,6 +26,9 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       display: "flex",
       height: "100%",
+    },
+    title: {
+      flexGrow: 1,
     },
     appBar: {
       transition: theme.transitions.create(["margin", "width"], {
@@ -78,6 +93,7 @@ export default function NavBar(props: any) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const history = useHistory();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -85,6 +101,11 @@ export default function NavBar(props: any) {
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+
+  const logOutHandler = () => {
+    deleteAccess();
+    history.push("/home");
   };
 
   return (
@@ -97,18 +118,30 @@ export default function NavBar(props: any) {
         })}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
+          {getAccess().access_token ? (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : null}
+
+          <Typography variant="h6" className={classes.title}>
             Raffle Drawing System
           </Typography>
+          {getAccess().access_token ? (
+            <Button color="inherit" onClick={logOutHandler} href="">
+              Logout
+            </Button>
+          ) : (
+            <Button color="inherit" href="/login">
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <Drawer

@@ -1,19 +1,33 @@
 import { getRepository, LessThan, Raw, Between, Like } from "typeorm";
-import { Param, Body, Get, Post, Put, Delete, Res, Req, JsonController } from "routing-controllers";
+import {
+  Param,
+  Body,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Res,
+  Req,
+  JsonController,
+  UseBefore,
+  HeaderParam,
+} from "routing-controllers";
 import { validate } from "class-validator";
 import { Prizes } from "../entity/Prizes";
+import { checkJwt } from "../middlewares/checkJwt";
 
 @JsonController()
+@UseBefore(checkJwt)
 export class PrizesController {
   private repository = getRepository(Prizes);
 
   @Get("/prizes")
-  getAll() {
+  getAll(@HeaderParam("access_token") token: string) {
     return this.repository.find();
   }
 
   @Get("/prizes/paginate")
-  async paginate(@Res() res: any, @Req() req: any) {
+  async paginate(@HeaderParam("access_token") token: string, @Res() res: any, @Req() req: any) {
     const page = req.query.page * 1;
     const limit = req.query.limit * 1;
     const search = req.query.search || "";
@@ -49,12 +63,12 @@ export class PrizesController {
   }
 
   @Get("/prize/:id")
-  one(@Param("id") id: number) {
+  one(@HeaderParam("access_token") token: string, @Param("id") id: number) {
     return this.repository.findOne(id);
   }
 
   @Post("/prizes")
-  async save(@Body() body: Prizes, @Res() res: any) {
+  async save(@HeaderParam("access_token") token: string, @Body() body: Prizes, @Res() res: any) {
     try {
       validate(body).then((errors: any) => {
         if (errors.length > 0) {
@@ -69,7 +83,12 @@ export class PrizesController {
   }
 
   @Put("/prize/:id")
-  async put(@Param("id") id: number, @Body() body: Prizes, @Res() res: any) {
+  async put(
+    @HeaderParam("access_token") token: string,
+    @Param("id") id: number,
+    @Body() body: Prizes,
+    @Res() res: any
+  ) {
     validate(body).then((errors: any) => {
       if (errors.length > 0) {
         res.send(errors);
@@ -81,7 +100,7 @@ export class PrizesController {
   }
 
   @Delete("/prize/:id")
-  async remove(@Param("id") id: number, @Res() res: any) {
+  async remove(@HeaderParam("access_token") token: string, @Param("id") id: number, @Res() res: any) {
     let student = await this.repository.findOneOrFail(id);
     await this.repository.remove(student);
     return res.send(`id: ${id} has been removed.`);

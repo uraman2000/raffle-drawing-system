@@ -5,8 +5,8 @@ import Confetti from "react-confetti";
 import { Grid, Box, Typography, Button, FormControl, InputLabel, Select, FormHelperText } from "@material-ui/core";
 import { UseDelete, UseDeleteBulk } from "../../utils/UseDelete";
 import { ShuffleArray } from "../../utils/ShuffleArray";
-import api from "../../utils/api";
 import "./slot.css";
+import { api } from "../../utils/api";
 const regionList = ["NLR", "SLR", "VIS", "NMR", "EMR", "SMR"];
 
 export default function RaffleDrawer() {
@@ -33,7 +33,7 @@ export default function RaffleDrawer() {
   useEffect(() => {
     const fetchData = async () => {
       const wordlist: any = await api.get(`entries/region/${state.regionSelected}`);
-
+      
       if (wordlist.length === 0) {
         setstate({ ...state, wordList: [{ name: "empty" }] });
         return;

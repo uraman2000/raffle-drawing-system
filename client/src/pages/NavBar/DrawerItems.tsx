@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const links = [
-  { title: "Home", link: "/", icon: <HomeIcon /> },
+  { title: "Home", link: "/home", icon: <HomeIcon /> },
   { title: "Entries", link: "/entries", icon: <AssignmentIcon /> },
   { title: "Winner", link: "/winners", icon: <FlagIcon /> },
   { title: "Prizes", link: "/prizes", icon: <CardGiftcardIcon /> },

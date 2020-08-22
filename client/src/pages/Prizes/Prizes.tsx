@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import MaterialTable, { Column } from "material-table";
-import api from "../../utils/api";
+import { api } from "../../utils/api";
 
 interface Row {
   id: number;
